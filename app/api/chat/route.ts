@@ -19,14 +19,18 @@ async function makeFireworksApiRequest(messages, input) {
 
     const WebSocket = require("ws");
     const isServer = typeof window === "undefined";
-    const socket = new WebSocket(
-      "wss://api.fireworks.ai/inference/v1/chat/completions",
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-      },
-    );
+
+    const socket = isServer
+      ? new WebSocket("wss://api.fireworks.ai/inference/v1/chat/completions", {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        })
+      : null;
+
+    if (!socket) {
+      throw new Error("WebSocket can only be created on the server side.");
+    }
 
     return new Promise((resolve, reject) => {
       socket.onmessage = (event) => {
